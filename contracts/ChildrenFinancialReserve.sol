@@ -56,4 +56,6 @@ contract ChildrenFinancialReserve {
     function getChild(address _child) public view returns (Child memory) {
         return children[_child];
     }
+
+    
 }
