@@ -31,25 +31,30 @@ contract ChildrenFinancialReserve {
         emit ChildRegistered(_child, _name, _releaseAge);
     }
 
-    function depositFunds(address _child) external payable {
-        require(children[_child].registered, "Child not registered");
-        require(msg.value > 0, "No funds sent");
-        children[_child].balance += msg.value;
-        emit FundsDeposited(_child, msg.value);
-    }
+   event TransactionRecorded(
+    address indexed from,
+    address indexed to,
+    uint256 amount,
+    string transactionType,
+    uint256 timestamp
+);
 
-    function withdrawFunds() external {
-        Child storage child = children[msg.sender];
-        require(child.registered, "Not registered");
-        uint256 currentAge = getYear() - child.birthYear;
-        require(currentAge >= child.releaseAge, "Too early to withdraw");
-        require(child.balance > 0, "No funds available");
+function depositFunds(address _child) public payable {
+    require(children[_child].registered, "Child not registered");
+    children[_child].balance += msg.value;
 
-        uint256 amount = child.balance;
-        child.balance = 0;
-        payable(msg.sender).transfer(amount);
-        emit FundsWithdrawn(msg.sender, amount);
-    }
+    emit TransactionRecorded(msg.sender, _child, msg.value, "Deposit", block.timestamp);
+}
+
+function withdrawFunds(uint256 _amount) public {
+    require(children[msg.sender].registered, "Child not registered");
+    require(children[msg.sender].balance >= _amount, "Insufficient balance");
+
+    children[msg.sender].balance -= _amount;
+    payable(msg.sender).transfer(_amount);
+
+    emit TransactionRecorded(address(this), msg.sender, _amount, "Withdrawal", block.timestamp);
+}
 
     function getYear() public view returns (uint256) {
         // Approximate year
