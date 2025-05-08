@@ -16,6 +16,9 @@ contract ChildrenFinancialReserve {
     event FundsDeposited(address indexed child, uint256 amount);
     event FundsWithdrawn(address indexed child, uint256 amount);
 
+   function isChildRegistered(address _child) public view returns (bool) {
+    return children[_child].registered;
+}
     function registerChild(address _child, string memory _name, uint256 _birthYear, uint256 _releaseAge) external {
         require(!children[_child].registered, "Child already registered");
         children[_child] = Child({
@@ -53,9 +56,17 @@ contract ChildrenFinancialReserve {
         return (block.timestamp / 31556926) + 1970; // 31556926 seconds/year
     }
 
-    function getChild(address _child) public view returns (Child memory) {
-        return children[_child];
-    }
+   function getChild(address _child) public view returns (
+    string memory name,
+    uint256 birthYear,
+    uint256 releaseAge,
+    uint256 balance,
+    bool registered
+) {
+    require(children[_child].registered, "Child not registered");
+    Child memory child = children[_child];
+    return (child.name, child.birthYear, child.releaseAge, child.balance, child.registered);
+}
 
     
 }
